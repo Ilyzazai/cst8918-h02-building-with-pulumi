@@ -1,0 +1,12 @@
+encryptionsalt: v1:h8jZjrypI2s=:v1:F6B2J9xbn5u32YUm:r665/NzDSLa2lwbZLlsVufaTBTlrYQ==
+config:
+  my-first-app:frontendPort: "3002"
+  my-first-app:backendPort: "3000"
+  my-first-app:mongoPort: "27017"
+  my-first-app:mongoHost: mongo
+  my-first-app:database: cart
+  my-first-app:nodeEnvironment: development
+  my-first-app:protocol: http://
+  my-first-app:mongoUsername: admin
+  my-first-app:mongoPassword:
+    secure: v1:+Y/ayMJli+cqqcl5:SOZvW8v8hNBf7dzZK3OFiCR9W/Fzhg==

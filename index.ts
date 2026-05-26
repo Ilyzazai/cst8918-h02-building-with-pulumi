@@ -3,6 +3,7 @@ import * as docker from "@pulumi/docker";
 
 // Get configuration values
 const config = new pulumi.Config();
+
 const frontendPort = config.requireNumber("frontendPort");
 const backendPort = config.requireNumber("backendPort");
 const mongoPort = config.requireNumber("mongoPort");
@@ -10,6 +11,9 @@ const mongoHost = config.require("mongoHost");
 const database = config.require("database");
 const nodeEnvironment = config.require("nodeEnvironment");
 const protocol = config.require("protocol");
+
+const mongoUsername = config.require("mongoUsername");
+const mongoPassword = config.requireSecret("mongoPassword");
 
 const stack = pulumi.getStack();
 
@@ -51,6 +55,11 @@ const mongoContainer = new docker.Container("mongoContainer", {
             aliases: ["mongo"],
         },
     ],
+    envs: [
+        `MONGO_INITDB_ROOT_USERNAME=${mongoUsername}`,
+        pulumi.interpolate`MONGO_INITDB_ROOT_PASSWORD=${mongoPassword}`,
+        `MONGO_INITDB_DATABASE=${database}`,
+    ],
 });
 
 // Create the backend container
@@ -64,8 +73,8 @@ const backendContainer = new docker.Container("backendContainer", {
         },
     ],
     envs: [
-        `DATABASE_HOST=${mongoHost}`,
-        `DATABASE_NAME=${database}`,
+        pulumi.interpolate`DATABASE_HOST=mongodb://${mongoUsername}:${mongoPassword}@${mongoHost}:${mongoPort}`,
+        `DATABASE_NAME=${database}?authSource=admin`,
         `NODE_ENV=${nodeEnvironment}`,
     ],
     networksAdvanced: [
@@ -95,4 +104,7 @@ const frontendContainer = new docker.Container("frontendContainer", {
             name: network.name,
         },
     ],
-});
+}, { dependsOn: [backendContainer] });
+
+export const url = pulumi.interpolate`http://localhost:${frontendPort}`;
+export { mongoPassword };
